@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import signal
 import sys
+import drunk
 from flask import Flask, render_template, Response
 from collections import deque
 from datetime import datetime
@@ -91,7 +92,14 @@ class FrameGrabber(Thread):
         self.current_frame = None
  
     def run(self):
+        cap = cv2.VideoCapture(0)
+        p = 3
+        frames = [cap.read()[1] >> p for j in range(0,2**p)]
         while True:
+            success, frame = cap.read()
+            frames = frames[1:] + [frame >> p]
+            avg = sum(frames)
+            cv2.imshow('img', avg)
             self.frames += 1
             timestamp_begin = time()
             if self.frames > 10:
