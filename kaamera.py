@@ -2,7 +2,6 @@ import cv2
 import numpy as np
 import signal
 import sys
-import drunk
 from flask import Flask, render_template, Response
 from collections import deque
 from datetime import datetime
@@ -92,17 +91,18 @@ class FrameGrabber(Thread):
         self.current_frame = None
  
     def run(self):
-        cap = cv2.VideoCapture(0)
+        #cap = self.video#cv2.VideoCapture(0)
         p = 3
-        frames = [cap.read()[1] >> p for j in range(0,2**p)]
+        #print cap.read()
+        frames = [self.video.read()[1] >> p for j in range(0,2**p)]
         while True:
-            success, frame = cap.read()
-            frames = frames[1:] + [frame >> p]
-            avg = sum(frames)
-            cv2.imshow('img', avg)
-            self.frames += 1
-            timestamp_begin = time()
+            #success, frame = self.video.read()
             if self.frames > 10:
+                frames = frames[1:] + [frame >> p]
+                avg = sum(frames)
+                cv2.imshow('img', avg)
+                self.frames += 1
+                timestamp_begin = time()
                 self.fps = self.frames / (timestamp_begin - self.timestamp)
                 self.frames = 0
                 self.timestamp = timestamp_begin
@@ -115,6 +115,7 @@ class FrameGrabber(Thread):
             mask = cv2.dilate(mask, None, iterations=2)
             cutout = cv2.bitwise_and(frame,frame, mask= mask)
             cnts = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
+            print cnts
             found_any = False
             if len(cnts) > 0:
                 c = max(cnts, key=cv2.contourArea)
